@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Web Socket Example</title>
+        <link rel="stylesheet" href="css/socket.css">
+        <script src='http://code.jquery.com/jquery-1.9.1.min.js'></script>
+        <!-- Config for AeroGear.SimplePush -->
+        <script>
+        var AeroGearSimplePush = {
+                pushAppID: "402881ef3e5b5e47013e61470ada0067",
+                variantID: "402881ef3e5b5e47013e6147ad680068"
+            };
+        </script>
+        <script src="js/aerogear.custom.js"></script>
+    </head>
+    <body>
+        <h2>Response from Server</h2>
+        <div class="leftDiv">
+            <textarea id="responseText"></textarea>
+            <div>
+                <input type="text" id="mailVersion" value="1" disabled/> <button id="mail">Send Mail Update</button>
+            </div>
+            <div>
+                <input type="text" id="fooVersion" value="1" disabled/> <button id="foo">Send Foo Update</button>
+            </div>
+            <div>
+                <input type="text" id="broadcastVersion" value="1" disabled/> <button id="broadcast">Broadcast Update</button>
+            </div>
+        </div>
+        <div class="rightDiv" id="framer"></div>
+        <script src="js/socket.js"></script>
+    </body>
+</html>
