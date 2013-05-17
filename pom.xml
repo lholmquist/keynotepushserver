@@ -175,12 +175,13 @@
     <finalName>ag-push</finalName>
     <plugins>
       <plugin>
-        <artifactId>maven-war-plugin</artifactId>
-        <extensions>false</extensions>
-        <configuration>
-          <failOnMissingWebXml>false</failOnMissingWebXml>
-        </configuration>
-      </plugin>
+            <artifactId>maven-war-plugin</artifactId>
+            <version>2.1.1</version>
+            <configuration>
+              <outputDirectory>deployments</outputDirectory>
+              <warName>ROOT</warName>
+            </configuration>
+          </plugin>
       <!-- The JBoss AS plugin deploys your apps to a local JBoss AS container -->
       <!-- To use, set the JBOSS_HOME environment variable and run: mvn package jboss-as:deploy -->
       <plugin>
@@ -211,5 +212,27 @@
         
         
     </properties>
+   <!-- <profiles>
+    <profile>-->
+     <!-- When built in OpenShift the 'openshift' profile will be used when invoking mvn. -->
+     <!-- Use this profile for any OpenShift specific customization your app will need. -->
+     <!-- By default that is to put the resulting archive into the 'deployments' folder. -->
+     <!-- http://maven.apache.org/guides/mini/guide-building-for-different-environments.html -->
+    <!-- <id>openshift</id>
+     <build>
+        <finalName>keynotepushserver</finalName>
+        <plugins>
+          <plugin>
+            <artifactId>maven-war-plugin</artifactId>
+            <version>2.1.1</version>
+            <configuration>
+              <outputDirectory>deployments</outputDirectory>
+              <warName>ROOT</warName>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>-->
   
 </project>
