@@ -179,6 +179,7 @@
             <version>2.1.1</version>
             <configuration>
               <outputDirectory>deployments</outputDirectory>
+              <failOnMissingWebXml>false</failOnMissingWebXml>
             </configuration>
           </plugin>
       <!-- The JBoss AS plugin deploys your apps to a local JBoss AS container -->
