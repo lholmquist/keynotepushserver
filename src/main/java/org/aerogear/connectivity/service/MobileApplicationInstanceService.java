@@ -17,9 +17,13 @@
 
 package org.aerogear.connectivity.service;
 
+import java.util.List;
 import org.aerogear.connectivity.model.MobileApplicationInstance;
 
 public interface MobileApplicationInstanceService {
 
     MobileApplicationInstance addMobileApplicationInstance(MobileApplicationInstance mobileApplicationInstance);
+    MobileApplicationInstance updateMobileApplicationInstance(MobileApplicationInstance mobileApplicationInstance);
+    List<MobileApplicationInstance> findMobileApplicationInstancesByToken(String token);
+
 }
