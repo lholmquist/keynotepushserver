@@ -64,7 +64,12 @@ public class SenderServiceImpl implements SenderService {
                     .build();
 
             // send it out:
-            service.push(iOStokenz, msg);
+			try{
+                service.push(iOStokenz, msg);
+			} finally {
+                // clean up the resources!
+                service.stop();
+            }
         }
 
         // TODO: DISPATCH TO A QUEUE .....
