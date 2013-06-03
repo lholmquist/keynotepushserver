@@ -35,7 +35,8 @@ import java.util.*;
 
 public class SenderServiceImpl implements SenderService {
 	
-	@Inject private GCMCache cache;
+	@Inject private GCMCache gcmCache;
+	@Inject private APNsCache apnsCache;
 
     @Override
     public void broadcast(PushApplication pushApp,
@@ -45,12 +46,7 @@ public class SenderServiceImpl implements SenderService {
         for (iOSApplication iOSApp : iOSapps) {
 
             // service PER iOS app
-            ApnsService service = APNS
-                    .newService()
-                    .withCert(
-                            new ByteArrayInputStream(iOSApp.getCertificate()),
-                            iOSApp.getPassphrase()).withSandboxDestination()
-                    .asQueued().build();
+            ApnsService service = apnsCache.getApnsServiceForVariant(iOSApp);
 
             // get all the tokens:
             final Set<String> iOStokenz = new HashSet<String>();
@@ -69,12 +65,7 @@ public class SenderServiceImpl implements SenderService {
                     .build();
 
             // send it out:
-			try{
-                service.push(iOStokenz, msg);
-			} finally {
-                // clean up the resources!
-                service.stop();
-            }
+            service.push(iOStokenz, msg);
         }
 
         // TODO: DISPATCH TO A QUEUE .....
@@ -82,7 +73,7 @@ public class SenderServiceImpl implements SenderService {
         for (AndroidApplication androidApplication : androidApps) {
 
             // service PER android app:
-            Sender sender = cache.getSenderForAPIKey(androidApplication.getGoogleKey());
+            Sender sender = gcmCache.getSenderForAPIKey(androidApplication.getGoogleKey());
 
             final List<String> androidtokenz = new ArrayList<String>();
             Set<MobileApplicationInstance> androidApplications = androidApplication
