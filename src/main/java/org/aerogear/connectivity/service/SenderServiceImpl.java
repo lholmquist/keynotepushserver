@@ -18,6 +18,7 @@
 package org.aerogear.connectivity.service;
 
 import com.google.android.gcm.server.Message;
+import com.google.android.gcm.server.MulticastResult;
 import com.google.android.gcm.server.Sender;
 import com.notnoop.apns.APNS;
 import com.notnoop.apns.ApnsService;
@@ -26,11 +27,15 @@ import org.aerogear.connectivity.model.MobileApplicationInstance;
 import org.aerogear.connectivity.model.PushApplication;
 import org.aerogear.connectivity.model.iOSApplication;
 
+import javax.inject.Inject;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
 
 public class SenderServiceImpl implements SenderService {
+	
+	@Inject private GCMCache cache;
 
     @Override
     public void broadcast(PushApplication pushApp,
@@ -64,7 +69,12 @@ public class SenderServiceImpl implements SenderService {
                     .build();
 
             // send it out:
-            service.push(iOStokenz, msg);
+			try{
+                service.push(iOStokenz, msg);
+			} finally {
+                // clean up the resources!
+                service.stop();
+            }
         }
 
         // TODO: DISPATCH TO A QUEUE .....
@@ -72,7 +82,7 @@ public class SenderServiceImpl implements SenderService {
         for (AndroidApplication androidApplication : androidApps) {
 
             // service PER android app:
-            Sender sender = new Sender(androidApplication.getGoogleKey());
+            Sender sender = cache.getSenderForAPIKey(androidApplication.getGoogleKey());
 
             final List<String> androidtokenz = new ArrayList<String>();
             Set<MobileApplicationInstance> androidApplications = androidApplication
@@ -95,7 +105,7 @@ public class SenderServiceImpl implements SenderService {
 
             // send it out.....
             try {
-                sender.send(msg, androidtokenz, 0);
+                MulticastResult result = sender.send(msg, androidtokenz, 0);
             } catch (IOException e) {
                 e.printStackTrace();
             }

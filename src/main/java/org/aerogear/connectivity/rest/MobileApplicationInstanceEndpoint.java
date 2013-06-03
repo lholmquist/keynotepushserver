@@ -17,6 +17,10 @@
 
 package org.aerogear.connectivity.rest;
 
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.inject.Inject;
@@ -35,7 +39,8 @@ import org.aerogear.connectivity.service.MobileApplicationService;
 @TransactionAttribute
 public class MobileApplicationInstanceEndpoint
 {
-    @Inject
+    @Inject private Logger logger;
+	@Inject
     private MobileApplicationInstanceService mobileApplicationInstanceService;
 
     @Inject
@@ -47,13 +52,36 @@ public class MobileApplicationInstanceEndpoint
             @HeaderParam("ag-mobile-app") String mobileAppId, 
             MobileApplicationInstance entity) {
 
-        // store the installation:
-        entity = mobileApplicationInstanceService.addMobileApplicationInstance(entity);
-        // find the matching variation:
-        MobileApplication mobileApp = mobileApplicationService.findMobileApplicationById(mobileAppId);
-        // add installation to the matching variant
-        mobileApplicationService.addInstallation(mobileApp, entity);
+        List<MobileApplicationInstance> instances = mobileApplicationInstanceService.findMobileApplicationInstancesByToken(entity.getDeviceToken());
+		if (instances.isEmpty()) {
+	        // store the installation:
+	        entity = mobileApplicationInstanceService.addMobileApplicationInstance(entity);
+	        // find the matching variation:
+	        MobileApplication mobileApp = mobileApplicationService.findMobileApplicationById(mobileAppId);
+	        // add installation to the matching variant
+	        mobileApplicationService.addInstallation(mobileApp, entity);
+		} else {
+            logger.warning("UPDATE ON POST.......");
+
+            if (instances.size()>1) {
+               logger.severe("Too many registration for one installation");
+           }
+		   // update the entity:
+           entity = this.updateMobileApplicationInstance(instances.get(0), entity);		   
+        }
 
         return entity;
+   }
+
+   private MobileApplicationInstance updateMobileApplicationInstance(MobileApplicationInstance toUpdate, MobileApplicationInstance postedVariant) {
+       toUpdate.setCategory(postedVariant.getCategory());
+       toUpdate.setDeviceToken(postedVariant.getDeviceToken());
+       toUpdate.setClientIdentifier(postedVariant.getClientIdentifier());
+       toUpdate.setDeviceType(postedVariant.getDeviceType());
+       toUpdate.setMobileOperatingSystem(postedVariant.getMobileOperatingSystem());
+       toUpdate.setOsVersion(postedVariant.getOsVersion());
+
+       //update
+       return mobileApplicationInstanceService.updateMobileApplicationInstance(toUpdate);
    }
 }

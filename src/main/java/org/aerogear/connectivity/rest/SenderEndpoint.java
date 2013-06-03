@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.inject.Inject;
@@ -53,6 +55,14 @@ public class SenderEndpoint {
 
     @Inject
     private SenderService senderService;
+	
+	private AsyncHttpClient asyncHttpClient;
+	
+    @PostConstruct
+    public void createAsyncHttpClient() {
+        asyncHttpClient = new AsyncHttpClient();
+    }
+	
 
     @POST
     @Path("/broadcast/{id}")
@@ -76,7 +86,6 @@ public class SenderEndpoint {
         String endpoint = spa.getPushNetworkURL();
         
         String version = (String) message.get("version");
-        AsyncHttpClient asyncHttpClient = new AsyncHttpClient();
 
         Set<MobileApplicationInstance> instances = spa.getInstances();
         for (MobileApplicationInstance mobileApplicationInstance : instances) {
@@ -114,8 +123,6 @@ public class SenderEndpoint {
         String version = (String) message.get("version");
         List<String> channelIDList = (List<String>) message.get("channelIDs");
         
-        AsyncHttpClient asyncHttpClient = new AsyncHttpClient();
-        
         for (String channelID : channelIDList) {
 
             try {
@@ -135,4 +142,12 @@ public class SenderEndpoint {
         return Response.status(200)
                 .entity("Job submitted").build();
     }
+
+    @PreDestroy
+    public void closeAsyncHttpClient() {
+		if (asyncHttpClient != null) {
+            asyncHttpClient.close();
+		}
+    }
+
 }
