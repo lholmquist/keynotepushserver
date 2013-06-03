@@ -47,7 +47,6 @@ public class SenderServiceImpl implements SenderService {
 
             // service PER iOS app
             ApnsService service = apnsCache.getApnsServiceForVariant(iOSApp);
-			System.out.println("\n\n\n" + service + "\n\n\n");
 
             // get all the tokens:
             final Set<String> iOStokenz = new HashSet<String>();
