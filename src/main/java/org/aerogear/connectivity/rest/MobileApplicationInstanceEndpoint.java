@@ -17,7 +17,9 @@
 
 package org.aerogear.connectivity.rest;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,28 +52,49 @@ public class MobileApplicationInstanceEndpoint
     @Consumes("application/json")
     public MobileApplicationInstance registerInstallation(
             @HeaderParam("ag-mobile-app") String mobileAppId, 
-            MobileApplicationInstance entity) {
+            MobileApplicationInstance postedInstance) {
 
-        List<MobileApplicationInstance> instances = mobileApplicationInstanceService.findMobileApplicationInstancesByToken(entity.getDeviceToken());
+
+        // find the matching variation:
+        MobileApplication mobileApp = mobileApplicationService.findMobileApplicationById(mobileAppId);
+        if (mobileApp == null) {
+            logger.severe("\n\nCould not find Mobile Variant\n\n");
+            return null; // TODO -> 404
+        }
+
+		// look up all the MobileVariantInstances for this variant:
+		List<MobileApplicationInstance> instances = findInstanceByDeviceToken(mobileApp.getInstances(), postedInstance.getDeviceToken());	
 		if (instances.isEmpty()) {
 	        // store the installation:
-	        entity = mobileApplicationInstanceService.addMobileApplicationInstance(entity);
-	        // find the matching variation:
-	        MobileApplication mobileApp = mobileApplicationService.findMobileApplicationById(mobileAppId);
+	        postedInstance = mobileApplicationInstanceService.addMobileApplicationInstance(postedInstance);
 	        // add installation to the matching variant
-	        mobileApplicationService.addInstallation(mobileApp, entity);
+	        mobileApplicationService.addInstallation(mobileApp, postedInstance);
 		} else {
             logger.warning("UPDATE ON POST.......");
 
+			// should be impossible
             if (instances.size()>1) {
                logger.severe("Too many registration for one installation");
            }
 		   // update the entity:
-           entity = this.updateMobileApplicationInstance(instances.get(0), entity);		   
+           postedInstance = this.updateMobileApplicationInstance(instances.get(0), postedInstance);		   
         }
 
-        return entity;
+        return postedInstance;
    }
+
+   // TODO: move to JQL
+   private List<MobileApplicationInstance> findInstanceByDeviceToken(Set<MobileApplicationInstance> instances, String deviceToken) {
+       final List<MobileApplicationInstance> instancesWithToken = new ArrayList<MobileApplicationInstance>();
+       
+       for (MobileApplicationInstance instance : instances) {
+           if (instance.getDeviceToken().equals(deviceToken))
+               instancesWithToken.add(instance);
+       }
+
+       return instancesWithToken;
+   }
+
 
    private MobileApplicationInstance updateMobileApplicationInstance(MobileApplicationInstance toUpdate, MobileApplicationInstance postedVariant) {
        toUpdate.setCategory(postedVariant.getCategory());
